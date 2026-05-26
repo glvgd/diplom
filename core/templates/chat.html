@@ -16,7 +16,7 @@
                     <div class="message-avatar">🤖</div>
                     <div class="message-content">
                         <div class="message-username">AI Ассистент</div>
-                        <div class="message-text">Привет! Я AI-ассистент. Задавай вопросы о профессиях, подготовке к ЕГЭ или поступлении в вузы!</div>
+                        <div class="message-text">Привет! Я AI-ассистент. Задавай вопросы о профессиях, подготовке к ЕГЭ или поступлении в вузы! Напиши "помощь" чтобы узнать, что я умею.</div>
                         <div class="message-time">сейчас</div>
                     </div>
                 </div>
@@ -31,69 +31,46 @@
 </div>
 
 <script>
-let ws = null;
-
-function connectWebSocket() {
-    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    const wsUrl = protocol + window.location.host + '/ws/chat/';
-    
-    console.log('Connecting to:', wsUrl);
-    
-    ws = new WebSocket(wsUrl);
-    
-    ws.onopen = function() {
-        console.log('✅ WebSocket connected');
-        document.getElementById('chat-input').disabled = false;
-    };
-    
-    ws.onmessage = function(e) {
-        console.log('📩 Message received:', e.data);
-        try {
-            const data = JSON.parse(e.data);
-            if (data.type === 'message') {
-                addMessage(data.username, data.message, data.is_bot);
-            }
-        } catch (error) {
-            console.error('Error parsing message:', error);
-        }
-    };
-    
-    ws.onclose = function(e) {
-        console.log('❌ WebSocket disconnected. Code:', e.code, 'Reason:', e.reason);
-        document.getElementById('chat-input').disabled = true;
-        addSystemMessage('⚠️ Соединение потеряно. Перезагрузите страницу.');
-        
-        // Пытаемся переподключиться через 3 секунды
-        setTimeout(connectWebSocket, 3000);
-    };
-    
-    ws.onerror = function(error) {
-        console.error('WebSocket error:', error);
-        addSystemMessage('⚠️ Ошибка соединения. Проверьте что сервер запущен.');
-    };
-}
-
 function sendMessage() {
     const input = document.getElementById('chat-input');
     const message = input.value.trim();
     
-    if (!message) {
-        return;
-    }
+    if (!message) return;
     
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-        addSystemMessage('⚠️ Нет соединения с сервером. Пожалуйста, перезагрузите страницу.');
-        return;
-    }
-    
-    // Добавляем сообщение пользователя сразу
+    // Добавляем сообщение пользователя
     addMessage('Вы', message, false);
-    
-    // Отправляем на сервер
-    ws.send(JSON.stringify({'message': message}));
-    
-    // Очищаем поле ввода
     input.value = '';
+    
+    // Отключаем кнопку
+    const btn = document.querySelector('.chat-input-area button');
+    btn.disabled = true;
+    btn.textContent = 'Отправка...';
+    
+    // Отправляем AJAX запрос
+    fetch('/api/chat/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({message: message})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.response) {
+            addMessage('AI Ассистент', data.response, true);
+        } else if (data.error) {
+            addMessage('Система', '❌ ' + data.error, true);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        addMessage('Система', '❌ Ошибка соединения. Проверьте что сервер запущен.', true);
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = 'Отправить';
+    });
 }
 
 function addMessage(username, message, isBot) {
@@ -104,28 +81,18 @@ function addMessage(username, message, isBot) {
     const avatar = isBot ? '🤖' : '👤';
     const time = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     
+    let formattedMessage = message.replace(/\n/g, '<br>');
+    formattedMessage = formattedMessage.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
     messageDiv.innerHTML = `
         <div class="message-avatar">${avatar}</div>
         <div class="message-content">
             <div class="message-username">${escapeHtml(username)}</div>
-            <div class="message-text">${escapeHtml(message)}</div>
+            <div class="message-text">${formattedMessage}</div>
             <div class="message-time">${time}</div>
         </div>
     `;
     
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-function addSystemMessage(message) {
-    const messagesContainer = document.getElementById('chat-messages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message system';
-    messageDiv.innerHTML = `
-        <div class="message-content">
-            <div class="message-text system">⚠️ ${escapeHtml(message)}</div>
-        </div>
-    `;
     messagesContainer.appendChild(messageDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
@@ -143,12 +110,19 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Подключаемся при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    connectWebSocket();
-    
-    // Фокус на поле ввода
-    document.getElementById('chat-input').focus();
-});
+function getCSRFToken() {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, 10) === 'csrftoken=') {
+                cookieValue = decodeURIComponent(cookie.substring(10));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 </script>
 {% endblock %}

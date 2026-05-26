@@ -11,12 +11,6 @@ class SubjectAdmin(admin.ModelAdmin):
     list_editable = ['icon', 'color']
     list_per_page = 20
     
-    fieldsets = (
-        ('Основная информация', {
-            'fields': ('name', 'exam_type', 'icon', 'color')
-        }),
-    )
-    
     def tasks_count(self, obj):
         return obj.task_set.count()
     tasks_count.short_description = 'Кол-во заданий'
@@ -27,15 +21,6 @@ class TaskAdmin(admin.ModelAdmin):
     search_fields = ['text', 'correct_answer']
     list_editable = ['points']
     list_per_page = 20
-    
-    fieldsets = (
-        ('Задание', {
-            'fields': ('subject', 'text', 'correct_answer', 'explanation')
-        }),
-        ('Дополнительно', {
-            'fields': ('exam_year', 'points')
-        }),
-    )
     
     def text_preview(self, obj):
         return obj.text[:50] + '...' if len(obj.text) > 50 else obj.text
@@ -53,25 +38,6 @@ class ProfessionAdmin(admin.ModelAdmin):
     search_fields = ['name', 'description']
     list_per_page = 20
     inlines = [ProfessionRequirementInline]
-    
-    fieldsets = (
-        ('Основная информация', {
-            'fields': ('name', 'description', 'requirements')
-        }),
-        ('Зарплата', {
-            'fields': ('salary_min', 'salary_max')
-        }),
-        ('Востребованность', {
-            'fields': ('demand_level',)
-        }),
-        ('Мультимедиа', {
-            'fields': ('image_url', 'video_url'),
-            'classes': ('collapse',)
-        }),
-        ('Образование', {
-            'fields': ('universities',),
-        }),
-    )
     
     def salary_range(self, obj):
         return f"{obj.salary_min:,} - {obj.salary_max:,} ₽".replace(',', ' ')
@@ -101,7 +67,6 @@ class UserProgressAdmin(admin.ModelAdmin):
     def is_correct_icon(self, obj):
         return '✅' if obj.is_correct else '❌'
     is_correct_icon.short_description = 'Результат'
-    is_correct_icon.admin_order_field = 'is_correct'
 
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
@@ -137,7 +102,6 @@ class ChatMessageAdmin(admin.ModelAdmin):
         return obj.message[:50] + '...' if len(obj.message) > 50 else obj.message
     message_preview.short_description = 'Сообщение'
 
-# Регистрируем все модели в админке
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Subject, SubjectAdmin)

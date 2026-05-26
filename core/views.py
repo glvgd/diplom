@@ -5,9 +5,13 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .models import Subject, Task, Profession, UserProgress, UserProfile, ProfessionRequirement
+from django.core.paginator import Paginator
+from .models import Subject, Task, Profession, UserProgress, UserProfile, ProfessionRequirement, ChatMessage
 from .utils import recommend_professions
+from .chat_bot import LocalChatBot
 import json
+
+chat_bot = LocalChatBot()
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -53,12 +57,10 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    # Статистика
     total_solved = UserProgress.objects.filter(user=request.user).count()
     correct_solved = UserProgress.objects.filter(user=request.user, is_correct=True).count()
     accuracy = round(correct_solved / total_solved * 100, 1) if total_solved > 0 else 0
     
-    # Статистика по предметам
     subject_stats = []
     for subject in Subject.objects.all():
         solved = UserProgress.objects.filter(user=request.user, task__subject=subject).count()
@@ -73,7 +75,6 @@ def dashboard(request):
                 'accuracy': round(correct / solved * 100, 1)
             })
     
-    # Рекомендации
     recommendations = recommend_professions(request.user)
     
     context = {
@@ -91,7 +92,6 @@ def testing(request):
 
 @login_required
 def get_tasks(request, subject_id):
-    """API для получения заданий"""
     solved_tasks = UserProgress.objects.filter(user=request.user).values_list('task_id', flat=True)
     tasks = Task.objects.filter(subject_id=subject_id).exclude(id__in=solved_tasks)[:10]
     
@@ -106,7 +106,6 @@ def get_tasks(request, subject_id):
 @login_required
 @require_http_methods(["POST"])
 def check_answer(request):
-    """API для проверки ответа"""
     data = json.loads(request.body)
     task_id = data.get('task_id')
     answer = data.get('answer', '').strip()
@@ -114,7 +113,6 @@ def check_answer(request):
     task = get_object_or_404(Task, id=task_id)
     is_correct = answer.lower() == task.correct_answer.lower()
     
-    # Сохраняем результат
     UserProgress.objects.create(
         user=request.user,
         task=task,
@@ -154,7 +152,6 @@ def profile(request):
         profile.grade = request.POST.get('grade', 10)
         profile.telegram = request.POST.get('telegram', '')
         profile.save()
-        
         return redirect('profile')
     
     return render(request, 'profile.html', {
@@ -165,3 +162,16 @@ def profile(request):
 @login_required
 def chat(request):
     return render(request, 'chat.html')
+
+@csrf_exempt
+@login_required
+def chat_api(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            message = data.get('message', '')
+            response = chat_bot.get_response(message, request.user)
+            return JsonResponse({'response': response})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
