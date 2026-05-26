@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Добро пожаловать в ProfGuide</h2>
+        <p class="subtitle">Платформа для выбора профессии</p>
+        
+        {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Имя пользователя</label>
+                <input type="text" name="username" required placeholder="Введите username">
+            </div>
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" name="password" required placeholder="Введите пароль">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Войти</button>
+        </form>
+        <p class="auth-link">
+            Нет аккаунта? <a href="/register/">Зарегистрироваться</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

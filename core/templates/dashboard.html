@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная панель{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="container">
+        <div class="welcome-section">
+            <h1>Привет, {{ user.username }}! 👋</h1>
+            <p>Готов определить свою будущую профессию?</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-value">{{ total_solved }}</div>
+                <div class="stat-label">Решено заданий</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value">{{ accuracy }}%</div>
+                <div class="stat-label">Точность</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💼</div>
+                <div class="stat-value">{{ recommendations|length }}</div>
+                <div class="stat-label">Рекомендаций</div>
+            </div>
+        </div>
+        
+        {% if subject_stats %}
+        <div class="subjects-section">
+            <h2>📊 Ваша успеваемость по предметам</h2>
+            <div class="subjects-grid">
+                {% for stat in subject_stats %}
+                <div class="subject-card" style="border-left-color: {{ stat.color }}">
+                    <div class="subject-icon">{{ stat.icon }}</div>
+                    <div class="subject-name">{{ stat.name }}</div>
+                    <div class="subject-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ stat.accuracy }}%; background: {{ stat.color }}"></div>
+                        </div>
+                        <div class="subject-stats">{{ stat.correct }}/{{ stat.solved }} ({{ stat.accuracy }}%)</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="recommendations-section">
+            <h2>🎯 Рекомендованные профессии</h2>
+            <div class="professions-grid">
+                {% if recommendations %}
+                    {% for prof in recommendations %}
+                    <div class="prof-card">
+                        <h3>{{ prof.name }}</h3>
+                        <p>{{ prof.description|truncatewords:20 }}</p>
+                        <div class="prof-details">
+                            <div>💰 {{ prof.salary_min }} - {{ prof.salary_max }} ₽</div>
+                            <div>📈 Востребованность: {% for i in "12345"|make_list %}{% if forloop.counter <= prof.demand_level %}⭐{% else %}☆{% endif %}{% endfor %}</div>
+                        </div>
+                        <a href="/profession/{{ prof.id }}/" class="btn btn-primary">Подробнее</a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">
+                        <p>😊 Пока нет рекомендаций. Решите хотя бы 3 задания в разделе "Тестирование"!</p>
+                        <a href="/testing/" class="btn btn-primary">Начать тестирование</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="/testing/" class="btn btn-primary">🚀 Начать тестирование</a>
+            <a href="/professions/" class="btn btn-secondary">📚 Все профессии</a>
+            <a href="/chat/" class="btn btn-accent">💬 Задать вопрос AI</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

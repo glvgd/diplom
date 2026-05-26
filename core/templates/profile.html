@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Мой профиль{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    {{ user.first_name|first|default:user.username|first|upper }}
+                </div>
+                <div class="profile-info">
+                    <h1>{{ user.first_name }} {{ user.last_name }}</h1>
+                    <p>@{{ user.username }}</p>
+                    <p>📧 {{ user.email }}</p>
+                </div>
+                <button class="btn btn-secondary" onclick="toggleEdit()">✏️ Редактировать</button>
+            </div>
+            
+            <div id="view-mode">
+                <div class="info-row">
+                    <div class="info-label">📚 Класс:</div>
+                    <div class="info-value">{{ profile.grade }} класс</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">🏫 Школа:</div>
+                    <div class="info-value">{{ profile.school|default:"Не указана" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">📱 Telegram:</div>
+                    <div class="info-value">{{ profile.telegram|default:"Не указан" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">📅 Дата регистрации:</div>
+                    <div class="info-value">{{ user.date_joined|date:"d.m.Y" }}</div>
+                </div>
+            </div>
+            
+            <div id="edit-mode" style="display: none;">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Класс</label>
+                        <select name="grade">
+                            <option value="9" {% if profile.grade == 9 %}selected{% endif %}>9 класс</option>
+                            <option value="10" {% if profile.grade == 10 %}selected{% endif %}>10 класс</option>
+                            <option value="11" {% if profile.grade == 11 %}selected{% endif %}>11 класс</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Школа</label>
+                        <input type="text" name="school" value="{{ profile.school }}" placeholder="Название школы">
+                    </div>
+                    <div class="form-group">
+                        <label>Telegram</label>
+                        <input type="text" name="telegram" value="{{ profile.telegram }}" placeholder="@username">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleEdit()">Отмена</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="stats-card">
+            <h2>📊 Моя статистика</h2>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-value">{{ history|length }}</div>
+                    <div class="stat-label">Решено заданий</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">
+                        {% with correct=history|dictsort:"is_correct"|length %}
+                            {% if history %}
+                                {% widthratio history|dictsort:"is_correct"|length history|length 100 %}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="stat-label">Точность</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="history-card">
+            <h2>📜 История решений</h2>
+            <div class="history-list">
+                {% for item in history %}
+                <div class="history-item">
+                    <div class="history-date">{{ item.solved_at|date:"d.m.Y H:i" }}</div>
+                    <div class="history-info">
+                        <div class="history-subject">{{ item.task.subject.name }}</div>
+                        <div class="history-text">{{ item.task.text|truncatechars:60 }}</div>
+                    </div>
+                    <div class="history-status {% if item.is_correct %}correct{% else %}incorrect{% endif %}">
+                        {% if item.is_correct %}✅ Правильно{% else %}❌ Неправильно{% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="no-history">
+                    <p>Вы еще не решили ни одного задания</p>
+                    <a href="/testing/" class="btn btn-primary">Начать тестирование</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleEdit() {
+    const viewMode = document.getElementById('view-mode');
+    const editMode = document.getElementById('edit-mode');
+    
+    if (viewMode.style.display === 'none') {
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+    } else {
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

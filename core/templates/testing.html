@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Тестирование{% endblock %}
+
+{% block content %}
+<div class="testing-page">
+    <div class="container">
+        <div class="subjects-selector">
+            <h1>Выберите предмет для подготовки</h1>
+            <div class="subjects-grid">
+                {% for subject in subjects %}
+                <div class="subject-select-card" onclick="selectSubject({{ subject.id }}, '{{ subject.name }}')">
+                    <div class="subject-icon">{{ subject.icon }}</div>
+                    <h3>{{ subject.name }}</h3>
+                    <p>{{ subject.get_exam_type_display }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div id="testing-area" style="display: none;">
+            <div class="testing-header">
+                <button class="btn btn-secondary" onclick="backToSubjects()">← Сменить предмет</button>
+                <div class="progress-info">
+                    <span id="current-task-num">1</span> / <span id="total-tasks">0</span>
+                </div>
+            </div>
+            
+            <div id="task-container" class="task-card">
+                <div id="task-subject" class="task-subject"></div>
+                <div id="task-text" class="task-text"></div>
+                <div class="task-answer">
+                    <input type="text" id="answer-input" placeholder="Введите ответ">
+                    <button class="btn btn-primary" onclick="checkAnswer()">Проверить</button>
+                </div>
+            </div>
+            
+            <div id="result-container" style="display: none;" class="result-card">
+                <div id="result-icon" class="result-icon"></div>
+                <h3 id="result-title"></h3>
+                <div id="explanation" class="explanation"></div>
+                <button class="btn btn-primary" onclick="nextTask()">Следующее задание</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentSubject = null;
+let tasks = [];
+let currentTaskIndex = 0;
+let totalTasks = 0;
+
+function selectSubject(subjectId, subjectName) {
+    currentSubject = { id: subjectId, name: subjectName };
+    fetchTasks();
+}
+
+function fetchTasks() {
+    fetch(`/api/tasks/${currentSubject.id}/`)
+        .then(response => response.json())
+        .then(data => {
+            tasks = data.tasks;
+            totalTasks = tasks.length;
+            
+            if (totalTasks === 0) {
+                alert('Поздравляем! Вы решили все задания по этому предмету!');
+                backToSubjects();
+                return;
+            }
+            
+            currentTaskIndex = 0;
+            document.querySelector('.subjects-selector').style.display = 'none';
+            document.getElementById('testing-area').style.display = 'block';
+            document.getElementById('total-tasks').textContent = totalTasks;
+            loadTask();
+        });
+}
+
+function loadTask() {
+    document.getElementById('task-container').style.display = 'block';
+    document.getElementById('result-container').style.display = 'none';
+    document.getElementById('current-task-num').textContent = currentTaskIndex + 1;
+    document.getElementById('task-subject').textContent = currentSubject.name;
+    document.getElementById('task-text').textContent = tasks[currentTaskIndex].text;
+    document.getElementById('answer-input').value = '';
+    document.getElementById('answer-input').focus();
+}
+
+function checkAnswer() {
+    const answer = document.getElementById('answer-input').value;
+    
+    fetch('/api/check/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            task_id: tasks[currentTaskIndex].id,
+            answer: answer
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('task-container').style.display = 'none';
+        document.getElementById('result-container').style.display = 'block';
+        
+        const resultIcon = document.getElementById('result-icon');
+        const resultTitle = document.getElementById('result-title');
+        
+        if (data.correct) {
+            resultIcon.textContent = '✅';
+            resultTitle.textContent = 'Правильно!';
+            resultIcon.className = 'result-icon correct';
+        } else {
+            resultIcon.textContent = '❌';
+            resultTitle.textContent = 'Неправильно';
+            resultIcon.className = 'result-icon incorrect';
+            document.getElementById('explanation').innerHTML = `
+                <strong>Правильный ответ:</strong> ${data.correct_answer}<br>
+                ${data.explanation ? `<strong>Объяснение:</strong> ${data.explanation}` : ''}
+            `;
+        }
+    });
+}
+
+function nextTask() {
+    currentTaskIndex++;
+    if (currentTaskIndex < totalTasks) {
+        loadTask();
+    } else {
+        alert('Поздравляем! Вы завершили все задания по этому предмету!');
+        backToSubjects();
+    }
+}
+
+function backToSubjects() {
+    document.querySelector('.subjects-selector').style.display = 'block';
+    document.getElementById('testing-area').style.display = 'none';
+    currentSubject = null;
+    tasks = [];
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

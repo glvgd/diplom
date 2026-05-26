@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profession.name }}{% endblock %}
+
+{% block content %}
+<div class="profession-detail-page">
+    <div class="container">
+        <a href="/professions/" class="back-link">← Назад к профессиям</a>
+        
+        <div class="detail-header">
+            <h1>{{ profession.name }}</h1>
+            <div class="demand-badge">
+                Востребованность: 
+                {% for i in "12345"|make_list %}
+                    {% if forloop.counter <= profession.demand_level %}⭐{% else %}☆{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="detail-content">
+            <div class="detail-section">
+                <h2>📖 Описание профессии</h2>
+                <p>{{ profession.description }}</p>
+            </div>
+            
+            <div class="detail-section">
+                <h2>📋 Требования к кандидату</h2>
+                <p>{{ profession.requirements|default:"Не указаны" }}</p>
+            </div>
+            
+            <div class="detail-section">
+                <h2>💰 Заработная плата</h2>
+                <div class="salary-info">
+                    <div class="salary-min">Минимальная: <strong>{{ profession.salary_min }} ₽</strong></div>
+                    <div class="salary-max">Максимальная: <strong>{{ profession.salary_max }} ₽</strong></div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h2>📚 Требуемые предметы ЕГЭ</h2>
+                <div class="subjects-list">
+                    {% for req in requirements %}
+                    <div class="subject-item">
+                        <span class="subject-name">{{ req.subject.name }}</span>
+                        <span class="subject-importance">
+                            Важность: 
+                            {% if req.importance >= 1.8 %}🔥 Критично
+                            {% elif req.importance >= 1.2 %}⭐ Важно
+                            {% else %}📖 Желательно{% endif %}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <p>Требования не указаны</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            {% if universities and universities|length > 0 %}
+            <div class="detail-section">
+                <h2>🏛️ Ведущие вузы России</h2>
+                <div class="universities-list">
+                    {% for uni in universities %}
+                        {% if uni.strip %}
+                        <div class="uni-item">{{ uni.strip }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="action-buttons">
+                <a href="/testing/" class="btn btn-primary">🚀 Пройти тестирование</a>
+                <button onclick="window.print()" class="btn btn-secondary">🖨️ Распечатать</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

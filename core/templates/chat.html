@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Чат с AI ассистентом{% endblock %}
+
+{% block content %}
+<div class="chat-page">
+    <div class="container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>💬 AI Ассистент по профориентации</h2>
+                <p>Задайте любой вопрос о профессиях, ЕГЭ или вузах</p>
+            </div>
+            
+            <div id="chat-messages" class="chat-messages">
+                <div class="message bot">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="message-username">AI Ассистент</div>
+                        <div class="message-text">Привет! Я AI-ассистент. Задавай вопросы о профессиях, подготовке к ЕГЭ или поступлении в вузы!</div>
+                        <div class="message-time">сейчас</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Напишите сообщение..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()" class="btn btn-primary">Отправить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let ws = null;
+
+function connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const wsUrl = protocol + window.location.host + '/ws/chat/';
+    
+    console.log('Connecting to:', wsUrl);
+    
+    ws = new WebSocket(wsUrl);
+    
+    ws.onopen = function() {
+        console.log('✅ WebSocket connected');
+        document.getElementById('chat-input').disabled = false;
+    };
+    
+    ws.onmessage = function(e) {
+        console.log('📩 Message received:', e.data);
+        try {
+            const data = JSON.parse(e.data);
+            if (data.type === 'message') {
+                addMessage(data.username, data.message, data.is_bot);
+            }
+        } catch (error) {
+            console.error('Error parsing message:', error);
+        }
+    };
+    
+    ws.onclose = function(e) {
+        console.log('❌ WebSocket disconnected. Code:', e.code, 'Reason:', e.reason);
+        document.getElementById('chat-input').disabled = true;
+        addSystemMessage('⚠️ Соединение потеряно. Перезагрузите страницу.');
+        
+        // Пытаемся переподключиться через 3 секунды
+        setTimeout(connectWebSocket, 3000);
+    };
+    
+    ws.onerror = function(error) {
+        console.error('WebSocket error:', error);
+        addSystemMessage('⚠️ Ошибка соединения. Проверьте что сервер запущен.');
+    };
+}
+
+function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    
+    if (!message) {
+        return;
+    }
+    
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+        addSystemMessage('⚠️ Нет соединения с сервером. Пожалуйста, перезагрузите страницу.');
+        return;
+    }
+    
+    // Добавляем сообщение пользователя сразу
+    addMessage('Вы', message, false);
+    
+    // Отправляем на сервер
+    ws.send(JSON.stringify({'message': message}));
+    
+    // Очищаем поле ввода
+    input.value = '';
+}
+
+function addMessage(username, message, isBot) {
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isBot ? 'bot' : 'user'}`;
+    
+    const avatar = isBot ? '🤖' : '👤';
+    const time = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    
+    messageDiv.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div class="message-content">
+            <div class="message-username">${escapeHtml(username)}</div>
+            <div class="message-text">${escapeHtml(message)}</div>
+            <div class="message-time">${time}</div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function addSystemMessage(message) {
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message system';
+    messageDiv.innerHTML = `
+        <div class="message-content">
+            <div class="message-text system">⚠️ ${escapeHtml(message)}</div>
+        </div>
+    `;
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function handleKeyPress(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Подключаемся при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    connectWebSocket();
+    
+    // Фокус на поле ввода
+    document.getElementById('chat-input').focus();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Все профессии{% endblock %}
+
+{% block content %}
+<div class="professions-page">
+    <div class="container">
+        <h1 class="page-title">📚 Все профессии России</h1>
+        <p class="page-subtitle">Выберите профессию, чтобы узнать подробности</p>
+        
+        <div class="professions-grid">
+            {% for profession in professions %}
+            <div class="profession-card" onclick="window.location.href='/profession/{{ profession.id }}/'">
+                <div class="profession-icon">💼</div>
+                <h3>{{ profession.name }}</h3>
+                <p>{{ profession.description|truncatewords:25 }}</p>
+                <div class="profession-meta">
+                    <span class="salary">💰 {{ profession.salary_min }} - {{ profession.salary_max }} ₽</span>
+                    <span class="demand">
+                        Востребованность: 
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= profession.demand_level %}⭐{% else %}☆{% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                <button class="btn btn-primary btn-sm">Подробнее →</button>
+            </div>
+            {% empty %}
+            <p class="no-data">Профессии пока не добавлены</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
