@@ -13,21 +13,35 @@
     <nav class="navbar">
         <div class="container">
             <div class="nav-brand">
-                <a href="/">🎓 ProfGuide</a>
+                <a href="{% url 'core:home' %}">🎓 ProfGuide</a>
             </div>
             <div class="nav-menu">
-                <a href="/dashboard/" class="nav-link">📊 Главная</a>
-                <a href="/testing/" class="nav-link">📝 Тестирование</a>
-                <a href="/professions/" class="nav-link">💼 Профессии</a>
-                <a href="/chat/" class="nav-link">💬 Чат с AI</a>
-                <a href="/profile/" class="nav-link">👤 Профиль</a>
-                <a href="/logout/" class="nav-link logout">🚪 Выйти</a>
+                <a href="{% url 'core:dashboard' %}" class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}">📊 Главная</a>
+                <a href="{% url 'core:testing' %}" class="nav-link {% if request.path == '/testing/' %}active{% endif %}">📝 Тестирование</a>
+                <a href="{% url 'holland_test:start' %}" class="nav-link {% if '/holland/' in request.path %}active{% endif %}">🎯 Помощь с выбором профессии</a>
+                <a href="{% url 'core:professions' %}" class="nav-link {% if '/professions/' in request.path %}active{% endif %}">💼 Профессии</a>
+                <a href="{% url 'core:chat' %}" class="nav-link {% if '/chat/' in request.path %}active{% endif %}">💬 Чат с AI</a>
+                <a href="{% url 'core:profile' %}" class="nav-link {% if '/profile/' in request.path %}active{% endif %}">👤 Профиль</a>
+                {% if user.is_superuser %}
+                <a href="/admin/" class="nav-link" style="color: #ff9800;">🔧 Admin</a>
+                {% endif %}
+                <a href="{% url 'core:logout' %}" class="nav-link logout">🚪 Выйти</a>
             </div>
         </div>
     </nav>
     {% endif %}
     
     <main>
+        {% if messages %}
+        <div class="container">
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
         {% block content %}{% endblock %}
     </main>
     

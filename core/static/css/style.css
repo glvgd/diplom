@@ -1127,3 +1127,233 @@ h1, h2, h3, h4, h5, h6 {
         padding: 25px;
     }
 }
+
+
+/* ============================================
+   HOLLAND TEST STYLES
+   ============================================ */
+
+/* Карточки вопросов */
+.holland-question-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.holland-question-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.question-number {
+    color: #667eea;
+    font-weight: bold;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.question-text {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* Группа радиокнопок */
+.holland-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.holland-radio-group label {
+    cursor: pointer;
+    padding: 8px 20px;
+    border-radius: 25px;
+    transition: all 0.3s;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    font-size: 14px;
+}
+
+.holland-radio-group label:hover {
+    background: #e8eaf6;
+    transform: translateY(-2px);
+}
+
+.holland-radio-group input[type="radio"] {
+    margin-right: 8px;
+}
+
+/* Прогресс теста */
+.holland-progress {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    position: sticky;
+    top: 80px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.holland-progress-bar {
+    height: 30px;
+    background: #e0e0e0;
+    border-radius: 15px;
+    overflow: hidden;
+    margin: 15px 0;
+}
+
+.holland-progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Карточки типов личности */
+.holland-type-card {
+    text-align: center;
+    padding: 30px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    transition: transform 0.3s;
+}
+
+.holland-type-card:hover {
+    transform: scale(1.02);
+}
+
+.holland-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.holland-secondary {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.holland-score {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+/* Список профессий */
+.holland-professions-list {
+    list-style: none;
+    padding: 0;
+}
+
+.holland-professions-list li {
+    padding: 12px 15px;
+    margin: 10px 0;
+    background: #f8f9fa;
+    border-radius: 10px;
+    transition: all 0.3s;
+    border-left: 3px solid #667eea;
+}
+
+.holland-professions-list li:hover {
+    transform: translateX(10px);
+    background: #e8eaf6;
+}
+
+/* Контейнер для графика */
+.holland-chart-container {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    margin: 30px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Результаты теста */
+.holland-results-container {
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Таблица истории */
+.holland-history-table {
+    width: 100%;
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.holland-history-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    text-align: left;
+}
+
+.holland-history-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.holland-history-table tr:hover {
+    background: #f8f9fa;
+}
+
+.holland-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.holland-badge-r { background: #FF6B6B; color: white; }
+.holland-badge-i { background: #4ECDC4; color: white; }
+.holland-badge-a { background: #45B7D1; color: white; }
+.holland-badge-s { background: #96CEB4; color: white; }
+.holland-badge-e { background: #FFEAA7; color: #333; }
+.holland-badge-c { background: #DDA0DD; color: white; }
+
+@media (max-width: 768px) {
+    .holland-radio-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .holland-radio-group label {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .holland-progress {
+        position: relative;
+        top: 0;
+        margin-bottom: 20px;
+    }
+    
+    .holland-history-table {
+        display: block;
+        overflow-x: auto;
+    }
+}

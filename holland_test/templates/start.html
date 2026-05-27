@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Тест Голланда{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="testing-page">
+        <div class="subjects-selector">
+            <h1>📋 Тест Голланда</h1>
+            <p class="page-subtitle">Определите свой профессиональный тип личности</p>
+            
+            <div class="stats-grid" style="margin-top: 30px;">
+                <div class="stat-card">
+                    <div class="stat-icon">❓</div>
+                    <div class="stat-value">{{ questions_count }}</div>
+                    <div class="stat-label">вопросов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-value">5-7</div>
+                    <div class="stat-label">минут</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value">6</div>
+                    <div class="stat-label">типов личности</div>
+                </div>
+            </div>
+            
+            <div class="subjects-section">
+                <h2>Что такое тест Голланда?</h2>
+                <p>Тест помогает определить ваш тип личности и предпочтения в профессиональной деятельности. 
+                На основе ваших ответов мы определим 6 типов и подберем подходящие профессии.</p>
+                
+                <h3 style="margin-top: 30px;">6 типов личности:</h3>
+                <div class="subjects-grid" style="margin-top: 20px;">
+                    <div class="subject-card" style="border-left-color: #FF6B6B;">
+                        <div class="subject-icon">🔧</div>
+                        <div class="subject-name">Реалистичный</div>
+                        <p>Практичные, технические профессии</p>
+                    </div>
+                    <div class="subject-card" style="border-left-color: #4ECDC4;">
+                        <div class="subject-icon">🔬</div>
+                        <div class="subject-name">Интеллектуальный</div>
+                        <p>Исследования, анализ, наука</p>
+                    </div>
+                    <div class="subject-card" style="border-left-color: #45B7D1;">
+                        <div class="subject-icon">🎨</div>
+                        <div class="subject-name">Артистичный</div>
+                        <p>Творчество, самовыражение</p>
+                    </div>
+                    <div class="subject-card" style="border-left-color: #96CEB4;">
+                        <div class="subject-icon">🤝</div>
+                        <div class="subject-name">Социальный</div>
+                        <p>Помощь людям, общение</p>
+                    </div>
+                    <div class="subject-card" style="border-left-color: #FFEAA7;">
+                        <div class="subject-icon">💼</div>
+                        <div class="subject-name">Предприимчивый</div>
+                        <p>Лидерство, бизнес</p>
+                    </div>
+                    <div class="subject-card" style="border-left-color: #DDA0DD;">
+                        <div class="subject-icon">📊</div>
+                        <div class="subject-name">Конвенциональный</div>
+                        <p>Структура, порядок</p>
+                    </div>
+                </div>
+                
+                <div class="action-buttons" style="margin-top: 40px;">
+                    <a href="{% url 'holland_test:take' %}" class="btn btn-primary btn-lg">Начать тест 🚀</a>
+                    {% if previous_results %}
+                        <a href="{% url 'holland_test:history' %}" class="btn btn-secondary btn-lg">📜 Мои результаты</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

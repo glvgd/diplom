@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Результаты теста Голланда{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="testing-page">
+        <div class="holland-results-container">
+            <div class="alert alert-success text-center">
+                <h3>🎉 Тест успешно пройден!</h3>
+                <p>Дата: {{ result.date_taken|date:"d.m.Y H:i" }}</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="holland-type-card holland-primary">
+                        <h2>⭐ Основной тип</h2>
+                        <h3>{{ result.get_primary_type_name }}</h3>
+                        <div class="holland-score">
+                            {% if result.primary_type == 'R' %}{{ result.realistic_score }}
+                            {% elif result.primary_type == 'I' %}{{ result.investigative_score }}
+                            {% elif result.primary_type == 'A' %}{{ result.artistic_score }}
+                            {% elif result.primary_type == 'S' %}{{ result.social_score }}
+                            {% elif result.primary_type == 'E' %}{{ result.enterprising_score }}
+                            {% else %}{{ result.conventional_score }}
+                            {% endif %} баллов
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="holland-type-card holland-secondary">
+                        <h2>🌟 Второстепенный тип</h2>
+                        <h3>{{ result.get_secondary_type_name }}</h3>
+                        <div class="holland-score">
+                            {% if result.secondary_type == 'R' %}{{ result.realistic_score }}
+                            {% elif result.secondary_type == 'I' %}{{ result.investigative_score }}
+                            {% elif result.secondary_type == 'A' %}{{ result.artistic_score }}
+                            {% elif result.secondary_type == 'S' %}{{ result.social_score }}
+                            {% elif result.secondary_type == 'E' %}{{ result.enterprising_score }}
+                            {% else %}{{ result.conventional_score }}
+                            {% endif %} баллов
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="holland-chart-container">
+                <h3 class="text-center">📊 Распределение баллов</h3>
+                <canvas id="scoresChart" width="400" height="200"></canvas>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="subjects-section">
+                        <h3>💼 Рекомендуемые профессии</h3>
+                        <ul class="holland-professions-list">
+                            {% for profession in recommended_professions.primary %}
+                                <li>✨ {{ profession }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="subjects-section">
+                        <h3>🎯 Дополнительные профессии</h3>
+                        <ul class="holland-professions-list">
+                            {% for profession in recommended_professions.secondary %}
+                                <li>🔹 {{ profession }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{% url 'holland_test:history' %}" class="btn btn-secondary">📜 История</a>
+                <a href="{% url 'holland_test:start' %}" class="btn btn-primary">🔄 Пройти заново</a>
+                <a href="{% url 'core:dashboard' %}" class="btn btn-secondary">🏠 На главную</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('scoresChart').getContext('2d');
+    const chartData = {{ chart_data|safe }};
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Баллы',
+                data: chartData.scores,
+                backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'],
+                borderRadius: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: { display: true, text: 'Баллы' }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

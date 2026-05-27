@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Прохождение теста Голланда{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="testing-page">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="holland-progress">
+                    <h4>📊 Прогресс</h4>
+                    <div class="holland-progress-bar">
+                        <div id="progressFill" class="holland-progress-fill" style="width: 0%">0%</div>
+                    </div>
+                    <p>✅ Отвечено: <span id="answeredCount">0</span> из {{ total_questions }}</p>
+                    <hr>
+                    <div class="alert alert-info">
+                        <small>💡 Отвечайте честно, не задумываясь подолгу.</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <form method="post" id="hollandTestForm" action="{% url 'holland_test:take' %}">
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                    <div class="holland-question-card" data-question="{{ forloop.counter }}">
+                        <div class="question-number">Вопрос {{ forloop.counter }} из {{ total_questions }}</div>
+                        <div class="question-text">{{ field.label }}</div>
+                        <div class="holland-radio-group">
+                            {% for radio in field %}
+                                <label>
+                                    {{ radio.tag }} {{ radio.choice_label }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="action-buttons" style="margin-top: 30px;">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                            ✅ Завершить тест
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateProgress() {
+        const total = {{ total_questions }};
+        let answered = 0;
+        
+        document.querySelectorAll('.holland-question-card').forEach(function(card) {
+            const radioGroup = card.querySelectorAll('input[type="radio"]');
+            let isAnswered = false;
+            radioGroup.forEach(function(radio) {
+                if (radio.checked) {
+                    isAnswered = true;
+                }
+            });
+            if (isAnswered) answered++;
+        });
+        
+        const percent = Math.round((answered / total) * 100);
+        const progressFill = document.getElementById('progressFill');
+        progressFill.style.width = percent + '%';
+        progressFill.textContent = percent + '%';
+        document.getElementById('answeredCount').textContent = answered;
+        
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) {
+            submitBtn.disabled = (answered !== total);
+            if (answered === total) {
+                submitBtn.innerHTML = '✅ Отправить результаты';
+            } else {
+                submitBtn.innerHTML = '✅ Завершить тест';
+            }
+        }
+    }
+    
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            updateProgress();
+            
+            const currentCard = this.closest('.holland-question-card');
+            const nextCard = currentCard.nextElementSibling;
+            if (nextCard && nextCard.classList.contains('holland-question-card')) {
+                setTimeout(() => {
+                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        });
+    });
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        updateProgress();
+    });
+</script>
+{% endblock %}
