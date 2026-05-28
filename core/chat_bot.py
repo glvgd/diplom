@@ -3,12 +3,28 @@ from .models import Profession, Subject, UserProgress
 
 class LocalChatBot:
     def __init__(self):
-        self.load_knowledge_base()
+        # Вместо моментальной загрузки объявляем переменные со значением None.
+        # Это защищает контейнер от падения при первом запуске, когда таблиц еще нет.
+        self._professions = None
+        self._subjects = None
+    
+    @property
+    def professions(self):
+        # Загружаем профессии из БД только тогда, когда к ним происходит первое реальное обращение
+        if self._professions is None:
+            self._professions = list(Profession.objects.all())
+        return self._professions
+
+    @property
+    def subjects(self):
+        # Загружаем предметы из БД по требованию
+        if self._subjects is None:
+            self._subjects = list(Subject.objects.all())
+        return self._subjects
     
     def load_knowledge_base(self):
-        """Загружаем базу знаний из БД"""
-        self.professions = list(Profession.objects.all())
-        self.subjects = list(Subject.objects.all())
+        """Метод оставлен пустым для сохранения совместимости, если он вызывается в других файлах"""
+        pass
     
     def get_response(self, message, user=None):
         """Главный метод для получения ответа"""
