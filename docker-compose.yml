@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # Если в коде используется Redis, этот блок его поднимет
+  redis:
+    image: redis:7-alpine
+    container_name: ych_redis
+    ports:
+      - "6379:6379"
+
+  # Контейнер вашего Django-приложения
+  web:
+    build: .
+    container_name: ych_web
+    command: >
+      sh -c "python manage.py migrate &&
+             uvicorn profguide.wsgi:application --host 0.0.0.0 --port 8000 --interface wsgi"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis

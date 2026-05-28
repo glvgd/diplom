@@ -1,0 +1,10 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git
+.DS_Store
+__MACOSX/
+db.sqlite3
