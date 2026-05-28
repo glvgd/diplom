@@ -15,7 +15,7 @@ chat_bot = LocalChatBot()
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('core:dashboard')
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -24,7 +24,7 @@ def login_view(request):
         
         if user:
             login(request, user)
-            return redirect('dashboard')
+            return redirect('core:dashboard')
         else:
             return render(request, 'login.html', {'error': 'Неверное имя пользователя или пароль'})
     
@@ -32,7 +32,7 @@ def login_view(request):
 
 def register_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('core:dashboard')
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -47,13 +47,13 @@ def register_view(request):
         UserProfile.objects.create(user=user, grade=grade)
         
         login(request, user)
-        return redirect('dashboard')
+        return redirect('core:dashboard')
     
     return render(request, 'register.html')
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('core:login')
 
 @login_required
 def dashboard(request):
